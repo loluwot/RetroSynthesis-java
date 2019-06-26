@@ -6,29 +6,32 @@ import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smarts.SmartsPattern;
 import org.openscience.cdk.smiles.SmilesParser;
 
+import java.io.FileNotFoundException;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void printMap(Map mp) {
+        Iterator it = mp.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            System.out.println(pair.getKey() + " = " + pair.getValue());
+            it.remove();
+        }
+    }
+    public static void main(String[] args) throws FileNotFoundException {
+        Scanner input = new Scanner(System.in);
+        System.out.println("Insert smiles of compound to be analyzed here: ");
+        String smiles = input.nextLine();
+        Functional fun = new Functional();
         try {
             SmilesParser sp  = new SmilesParser(SilentChemObjectBuilder.getInstance());
-            IAtomContainer m = sp.parseSmiles("CC(CCC(Cl)=O)C(O)=O");
-            if (Functional.acylHalide.matches(m)){
-                System.out.println(Arrays.toString(Functional.acylHalide.match(m)));
-                for (int i : Functional.acylHalide.match(m)){
+            IAtomContainer m = sp.parseSmiles(smiles);
+            printMap(fun.functionalGroupAnalysis(m));
 
-                    IAtom atom = m.getAtom(i);
-                    System.out.println(atom.getSymbol());
-                }
-            }
-            if (Functional.carboxylic.matches(m)){
-                System.out.println(Arrays.toString(Functional.carboxylic.match(m)));
-                for (int i : Functional.carboxylic.match(m)){
-                    IAtom atom = m.getAtom(i);
-                    System.out.println(atom.getSymbol());
-                }
-            }
         } catch (InvalidSmilesException e) {
             System.err.println(e.getMessage());
         }
