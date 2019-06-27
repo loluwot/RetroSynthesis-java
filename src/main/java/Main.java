@@ -1,5 +1,6 @@
 import org.openscience.cdk.*;
 import org.openscience.cdk.atomtype.CDKAtomTypeMatcher;
+import org.openscience.cdk.depict.DepictionGenerator;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.exception.InvalidSmilesException;
 import org.openscience.cdk.interfaces.IAtom;
@@ -13,14 +14,12 @@ import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
+import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.AtomTypeManipulator;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class Main {
@@ -38,6 +37,7 @@ public class Main {
         String smiles = input.nextLine();
         Functional fun = new Functional();
         Reactions react = new Reactions();
+        Transformations transformations = new Transformations();
         try {
             SmilesParser sp  = new SmilesParser(SilentChemObjectBuilder.getInstance());
             IAtomContainer m = sp.parseSmiles(smiles);
@@ -64,14 +64,46 @@ public class Main {
 //                System.out.println(electroNeg1.calculate(m.getAtom(i), m).getValue().toString());
 //            }
             //printMap(react.reactionAnalysis(m));
-            react.reactionAnalysis(m);
-            //System.out.println(react.idFinder("[#6,#1]C(C(=C([#6,#1])[#1])[#1])=O", m));
+//            transformations.reactionAnalysis(m);
+            IAtomContainer clone1 = m.clone();
+            ArrayList<IAtomContainer> products = react.reactionAnalysis(clone1);
+            if (products.size() == 0){
+                DepictionGenerator dg = new DepictionGenerator().withSize(512, 512)
+                        .withAtomColors();
+                for (int i = 0; i < 2; i++){
+                    System.out.println(i + "_____________________ INDEx");
+                    IAtomContainer copy = m.clone();
+                    IAtomContainer test = transformations.reactionAnalysis(copy, i);
+
+                    if (test == null){
+                        continue;
+                    }
+                    else{
+
+                        AtomContainerManipulator.convertImplicitToExplicitHydrogens(test);
+                        dg.depict(test).writeTo("test.png");
+                        ArrayList<IAtomContainer> products1 = react.reactionAnalysis(test);
+                        System.out.println(products1.size() + "SIZE IMPORTANT");
+                        if (products1.size() > 0){
+                            int j = 0;
+                            for (IAtomContainer container : products1){
+
+                                dg.depict(container).writeTo("verycool" + j + ".png");
+                                j++;
+                            }
+                        }
+                    }
+                }
+            }
+            System.out.println(react.idFinder("[#6,#1]C([#6,#1])[O;D1]", m));
         } catch (InvalidSmilesException e) {
             System.err.println(e.getMessage());
         } catch (CDKException e) {
             e.printStackTrace();
         }
         catch (IOException e) {
+            e.printStackTrace();
+        } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
 
