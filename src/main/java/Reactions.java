@@ -41,6 +41,7 @@ public class Reactions {
             String name = arr [0];
             String smarts = arr [1];
             int n = Integer.parseInt(arr[2]);
+            reactionMatch.put(name,SmartsPattern.create(smarts));
             num.add(n);
             for (int i = 3; i < n+3; i++){
                 cutPoints.add(Integer.parseInt(arr[i]));
@@ -57,17 +58,18 @@ public class Reactions {
             for (int i = n+4; i < 3*n+3; i+=2){
                 attachPoints.add(Integer.parseInt(arr[i]));
             }
-            reactionMatch.put(name,SmartsPattern.create(smarts));
+
         }
     }
     public SmartsPattern getPattern(String name){
         return (SmartsPattern)reactionMatch.get(name);
     }
+
     public SmartsPattern getPatternID(int id){
-        System.out.println(reactionMatch.values().size());
-        SmartsPattern [] arr = new SmartsPattern[reactionMatch.values().size()];
-        reactionMatch.values().toArray(arr);
-        return arr[id];
+        System.out.println(reactionMatch.values().size() + "size");
+        Map.Entry<String, SmartsPattern>[] arr = new Map.Entry[reactionMatch.values().size()];
+        reactionMatch.entrySet().toArray(arr);
+        return arr[reactionMatch.values().size()-id-1].getValue();
     }
     public boolean contains(int [] arr, int key){
         for (int i : arr){
@@ -84,12 +86,14 @@ public class Reactions {
        for (int i = 0; i < num.size(); i++){
            System.out.println(num.size() + "size");
            SmartsPattern pattern = getPatternID(i);
+           System.out.println(reactionMatch.keySet().toArray()[i] + "smarts");
            int n = num.get(i);
            if (pattern.matches(m)){
-
+               System.out.println(i + "index matched");
                int [] matches = pattern.match(m);
                System.out.println(Arrays.toString(matches));
                for (int j = 0; j < n; j++){
+                   System.out.println("index" + (i*n+j));
                    IAtom atom = m.getAtom(matches[cutPoints.get(i*n+j)]);
                    CDKAtomTypeMatcher matcher = CDKAtomTypeMatcher.getInstance(fGroups.get(i*n+j).getBuilder());
                    for (IAtom a : fGroups.get(i*n+j).atoms()) {
@@ -141,11 +145,27 @@ public class Reactions {
                     }
 
                }
+               break;
            }
        }
        for (int i = 0; i < retro.size(); i++){
            dg.depict(retro.get(i)).writeTo("retro" + i+".png");
        }
        return retro;
+    }
+    public ArrayList<Integer> idFinder(String smarts, IAtomContainer m){
+        SmartsPattern s = SmartsPattern.create(smarts);
+        ArrayList<Integer> default1 = new ArrayList<Integer>();
+        if (s.matches(m)){
+            System.out.println("AAAAAA");
+            int [] matches = s.match(m);
+            for (int i = 0; i < matches.length; i++){
+                IAtom atom = m.getAtom(matches[i]);
+                if (atom.isAromatic()){
+                    default1.add(i);
+                }
+            }
+        }
+        return default1;
     }
 }

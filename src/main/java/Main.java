@@ -53,24 +53,25 @@ public class Main {
             adder.addImplicitHydrogens(m);
             SmilesGenerator sg = new SmilesGenerator(SmiFlavor.Generic);
             System.out.println(sg.create(m) + "new smiles");
-            for (int i : fun.functionalGroupAnalysis(m).get("claisencondensation")){
-                IAtom a = m.getAtom(i);
-                System.out.print(a.getSymbol() + " ");
-                if (a.isAromatic()){
-                    System.out.print("bruh");
-                }
-            }
+//            for (int i : fun.functionalGroupAnalysis(m).get("claisencondensation")){
+//                IAtom a = m.getAtom(i);
+//                System.out.print(a.getSymbol() + " ");
+//                if (a.isAromatic()){
+//                    System.out.print("bruh");
+//                }
+//            }
 //            for (int i : fun.functionalGroupAnalysis(m).get("enone")){
 //                System.out.println(electroNeg1.calculate(m.getAtom(i), m).getValue().toString());
 //            }
             //printMap(react.reactionAnalysis(m));
             react.reactionAnalysis(m);
-
+            //System.out.println(react.idFinder("[#6,#1]C(C(=C([#6,#1])[#1])[#1])=O", m));
         } catch (InvalidSmilesException e) {
             System.err.println(e.getMessage());
         } catch (CDKException e) {
             e.printStackTrace();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
 
