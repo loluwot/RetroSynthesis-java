@@ -5,6 +5,7 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.exception.InvalidSmilesException;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IAtomContainerSet;
 import org.openscience.cdk.interfaces.IAtomType;
 import org.openscience.cdk.qsar.descriptors.atomic.PiElectronegativityDescriptor;
 import org.openscience.cdk.qsar.descriptors.atomic.SigmaElectronegativityDescriptor;
@@ -65,35 +66,42 @@ public class Main {
 //            }
             //printMap(react.reactionAnalysis(m));
 //            transformations.reactionAnalysis(m);
-            IAtomContainer clone1 = m.clone();
-            ArrayList<IAtomContainer> products = react.reactionAnalysis(clone1);
-            if (products.size() == 0){
-                DepictionGenerator dg = new DepictionGenerator().withSize(512, 512)
-                        .withAtomColors();
-                for (int i = 0; i < 2; i++){
-                    System.out.println(i + "_____________________ INDEx");
-                    IAtomContainer copy = m.clone();
-                    IAtomContainer test = transformations.reactionAnalysis(copy, i);
-
-                    if (test == null){
-                        continue;
-                    }
-                    else{
-
-                        AtomContainerManipulator.convertImplicitToExplicitHydrogens(test);
-                        dg.depict(test).writeTo("test.png");
-                        ArrayList<IAtomContainer> products1 = react.reactionAnalysis(test);
-                        System.out.println(products1.size() + "SIZE IMPORTANT");
-                        if (products1.size() > 0){
-                            int j = 0;
-                            for (IAtomContainer container : products1){
-
-                                dg.depict(container).writeTo("verycool" + j + ".png");
-                                j++;
-                            }
-                        }
-                    }
-                }
+//            IAtomContainer clone1 = m.clone();
+//            ArrayList<IAtomContainer> products = react.reactionAnalysis(clone1);
+//            if (products.size() == 0){
+//                DepictionGenerator dg = new DepictionGenerator().withSize(512, 512)
+//                        .withAtomColors();
+//                for (int i = 0; i < 2; i++){
+//                    System.out.println(i + "_____________________ INDEx");
+//                    IAtomContainer copy = m.clone();
+//                    IAtomContainer test = transformations.reactionAnalysis(copy, i);
+//
+//                    if (test == null){
+//                        continue;
+//                    }
+//                    else{
+//
+//                        AtomContainerManipulator.convertImplicitToExplicitHydrogens(test);
+//                        dg.depict(test).writeTo("test.png");
+//                        ArrayList<IAtomContainer> products1 = react.reactionAnalysis(test);
+//                        System.out.println(products1.size() + "SIZE IMPORTANT");
+//                        if (products1.size() > 0){
+//                            int j = 0;
+//                            for (IAtomContainer container : products1){
+//                                dg.depict(container).writeTo("verycool" + j + ".png");
+//                                j++;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+            DepictionGenerator dg = new DepictionGenerator().withSize(512, 512).withAtomColors();
+            IAtomContainerSet set2 = new AtomContainerSet();
+            set2.addAtomContainer(m);
+            int ii = 0;
+            for (IAtomContainer con : Retrosynthesis.step(set2, react, transformations).atomContainers()){
+                dg.depict(con).writeTo("final" + ii+".png");
+                ii++;
             }
             System.out.println(react.idFinder("[#6,#1]C([#6,#1])[O;D1]", m));
         } catch (InvalidSmilesException e) {

@@ -18,6 +18,7 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.AtomTypeManipulator;
 import org.xmlcml.euclid.Int;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -71,9 +72,10 @@ public class Reactions {
         reactionMatch.entrySet().toArray(arr);
         return arr[reactionMatch.values().size()-id-1].getValue();
     }
-    public boolean contains(int [] arr, int key){
+    public boolean contains(int [] arr, IAtom key, IAtomContainer m){
         for (int i : arr){
-            if (i == key){
+            IAtom a = m.getAtom(i);
+            if (a.equals(key)){
                 return true;
             }
         }
@@ -96,31 +98,34 @@ public class Reactions {
                    System.out.println("index" + (i*n+j));
                    IAtom atom = m.getAtom(matches[cutPoints.get(i*n+j)]);
                    CDKAtomTypeMatcher matcher = CDKAtomTypeMatcher.getInstance(fGroups.get(i*n+j).getBuilder());
+                   Iterable <IChemObject> highlights = new ArrayList<IChemObject>();
+                   for (int ii : matches){
+                       IAtom high = m.getAtom(ii);
+                       ((ArrayList<IChemObject>)highlights).add((IChemObject)high);
+                   }
+                   dg.withHighlight(highlights, Color.YELLOW).depict(m).writeTo("OG" +j + ".png");
                    for (IAtom a : fGroups.get(i*n+j).atoms()) {
                        IAtomType type = matcher.findMatchingAtomType(fGroups.get(i*n+j), a);
                        AtomTypeManipulator.configure(a, type);
                    }
                    IAtom atom2 = fGroups.get(i*n+j).getAtom(attachPoints.get(i*n+j));
                    Iterator iter2 = fGroups.get(i*n+j).getConnectedBondsList(atom2).iterator();
-                   while (iter2.hasNext()){
-                       IBond bond = (IBond) iter2.next();
-                       System.out.println(bond.getConnectedAtom(atom2).getSymbol() + "SSS");
-                       if (bond.getConnectedAtom(atom2).getAtomicNumber() == 1){
-                           m.removeBond(bond);
-                           break;
-                       }
-                   }
                    System.out.println(atom.getSymbol());
                    System.out.println(atom2.getSymbol());
                    Iterator iter = m.bonds().iterator();
+
                    while (iter.hasNext()) {
                        IBond bond = (IBond) iter.next();
-                       if (bond.getConnectedAtom(atom) != null && contains(matches,bond.getConnectedAtom(atom).getIndex())){
+                       if (bond.getConnectedAtom(atom) != null && contains(matches,bond.getConnectedAtom(atom), m)){
+                           System.out.println(bond.getConnectedAtom(atom).getSymbol() + "bruh");
+                           //((ArrayList<IChemObject>)highlights).add((IChemObject)bond.getConnectedAtom(atom));
                            m.removeBond(bond);
                            break;
                        }
                    }
-                    dg.depict(m).writeTo("pre" +j + ".png");
+
+
+                    dg.withHighlight(highlights, Color.YELLOW).depict(m).writeTo("pre" +j + ".png");
                    m.add(fGroups.get(i*n+j));
                    dg.depict(m).writeTo("post" +j + ".png");
                    IBond bon = new Bond(atom, atom2);
